@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 // Temporary
 // Replace with backend value later
-const isPremium = false;
+const isPremium = true;
 const DashboardHero = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [storeActive, setStoreActive] = useState(true);

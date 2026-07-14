@@ -1,48 +1,134 @@
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  getCart,
+  addToCart,
+  updateCartItem,
+  removeFromCart,
+  clearCart,
+} from "../api/customerApi";
 
 const CartContext = createContext();
 
-export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+export const CartProvider = ({
+  children,
+}) => {
+  const [cartItems, setCartItems] =
+    useState([]);
 
-  const addToCart = (product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
-        );
-      }
-      return [...prev, { ...product, qty: 1 }];
-    });
-  };
+  const [loading, setLoading] =
+    useState(false);
 
-  const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
-  };
+  const refreshCart = async () => {
+    try {
+      const res = await getCart();
 
-  const updateQty = (id, qty) => {
-    if (qty <= 0) {
-      removeFromCart(id);
-      return;
+setCartItems(
+  Array.isArray(res.data.data?.items)
+    ? res.data.data.items
+    : []
+);
+    } catch (err) {
+      console.log(err);
+
+      setCartItems([]);
     }
-    setCart((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, qty } : item))
-    );
   };
 
-  const clearCart = () => setCart([]);
+  useEffect(() => {
+    refreshCart();
+  }, []);
 
-  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const addItem = async (
+    product,
+    quantity = 1
+  ) => {
+    setLoading(true);
+
+    try {
+      await addToCart({
+        productId: product.id,
+        quantity,
+      });
+
+      await refreshCart();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateItem = async (
+    id,
+    quantity
+  ) => {
+    await updateCartItem(
+      id,
+      quantity
+    );
+
+    await refreshCart();
+  };
+
+  const removeItem = async (
+    id
+  ) => {
+    await removeFromCart(id);
+
+    await refreshCart();
+  };
+
+  const clear = async () => {
+    await clearCart();
+
+    await refreshCart();
+  };
+
+  const totalItems = useMemo(
+    () =>
+      cartItems.reduce(
+        (sum, item) =>
+          sum + item.quantity,
+        0
+      ),
+    [cartItems]
+  );
+
+const totalPrice = useMemo(
+  () =>
+    cartItems.reduce(
+      (sum, item) =>
+        sum + item.total,
+      0
+    ),
+  [cartItems]
+);
+
+  const value = {
+    cartItems,
+    totalItems,
+    totalPrice,
+    loading,
+    refreshCart,
+    addItem,
+    updateItem,
+    removeItem,
+    clear,
+  };
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQty, clearCart, totalItems, totalPrice }}
+      value={value}
     >
       {children}
     </CartContext.Provider>
   );
 };
 
-export const useCart = () => useContext(CartContext);
+export const useCart = () =>
+  useContext(CartContext);

@@ -1,7 +1,6 @@
 export const theme = {
   primary: "#1A4D2E",      // Brand Green
-  primary "#163D25",
-
+  
   secondary: "#FFB703",    // Accent Gold
 
   success: "#22C55E",

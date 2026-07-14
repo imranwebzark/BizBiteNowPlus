@@ -1,0 +1,23 @@
+[33m9e6cc09[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m, [m[1;31morigin/develop[m[33m)[m HEAD@{0}: pull origin develop: Fast-forward
+[33me6cad4a[m HEAD@{1}: commit: Change Assign delivery option
+[33m50d3264[m HEAD@{2}: checkout: moving from develop to develop
+[33m50d3264[m HEAD@{3}: reset: moving to origin/develop
+[33m3ef1377[m HEAD@{4}: checkout: moving from develop to develop
+[33m3ef1377[m HEAD@{5}: rebase (abort): returning to refs/heads/develop
+[33m50d3264[m HEAD@{6}: pull --rebase origin develop (start): checkout 50d32644702a1dae1b9e48f9f91a15cd4c3acbd6
+[33m3ef1377[m HEAD@{7}: commit: Save local work
+[33m8957d30[m HEAD@{8}: rebase (finish): returning to refs/heads/develop
+[33m8957d30[m HEAD@{9}: commit: change delivery management UI
+[33mfab7f6a[m HEAD@{10}: pull --rebase origin develop (start): checkout fab7f6a15eb33f5314abbf9a228994405699029f
+[33m353e19c[m HEAD@{11}: commit: Change Ui of Delivery management & Assign Delivery boy
+[33m5812c5d[m HEAD@{12}: checkout: moving from develop to develop
+[33m5812c5d[m HEAD@{13}: commit (merge): changes delivery management
+[33m386fa59[m HEAD@{14}: commit: Changes delivery management system
+[33mc350959[m HEAD@{15}: checkout: moving from develop to develop
+[33mc350959[m HEAD@{16}: commit (merge): Assign task of delivery boy
+[33m4c17850[m HEAD@{17}: checkout: moving from develop to develop
+[33m4c17850[m HEAD@{18}: commit: Assign task of delivery boy
+[33m4fd5146[m HEAD@{19}: commit: Impliment the Delivery managment System
+[33m08d492f[m HEAD@{20}: checkout: moving from develop to develop
+[33m08d492f[m HEAD@{21}: checkout: moving from main to develop
+[33m3fb657e[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{22}: clone: from https://github.com/imranwebzark/BizBiteNowPlus.git

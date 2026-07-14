@@ -3,7 +3,7 @@ import { CalendarDays, Clock3, Crown } from "lucide-react";
 export default function OrderHistory({
   orders = [],
   historyType = "today", // today | 30days | unlimited
-  isPlus = false,
+  isPlus = true,
 }) {
   if (
     (historyType === "30days" ||

@@ -1,4 +1,3 @@
-console.log("Loaded FestiveFilters file");
 import { Search, Filter, CalendarRange } from "lucide-react";
 import { festiveStatus } from "../../../data/festiveMenuData";
 

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 // import * as XLSX from "xlsx";
 import ProductsHeader from "../../../components/products/ProductsHeader";
 import ProductStats from "../../../components/products/ProductStats";
@@ -9,6 +9,7 @@ import ProductModal from "../../../components/products/ProductModal";
 import DeleteProductModal from "../../../components/products/DeleteProductModal";
 import { motion } from "framer-motion";
 import { products } from "../../../data/productsData.js";
+// import { getProduct } from "../../api/customerApi";
 
 export default function Products() {
   const [search, setSearch] = useState("");
@@ -25,37 +26,34 @@ export default function Products() {
   const [modalMode, setModalMode] = useState("add");
 
   const [productList, setProductList] = useState(products);
-// =========================
-// Subscription (Temporary)
-// Replace with backend later
-// =========================
+  // =========================
+  // Subscription (Temporary)
+  // Replace with backend later
+  // =========================
 
-const isPlusUser = false;
+  const isPlusUser = false;
 
-// =========================
-// Free Tier Limits
-// =========================
+  // =========================
+  // Free Tier Limits
+  // =========================
 
-const FREE_PRODUCT_LIMIT = 10;
-// =========================
-// Free Category Limit
-// =========================
+  const FREE_PRODUCT_LIMIT = 10;
+  // =========================
+  // Free Category Limit
+  // =========================
 
-const FREE_CATEGORY_LIMIT = 3;
+  const FREE_CATEGORY_LIMIT = 3;
 
-const [categoryError, setCategoryError] =
-  useState("");
-  
-const hasReachedProductLimit =
-  !isPlusUser &&
-  productList.length >= FREE_PRODUCT_LIMIT;
+  const [categoryError, setCategoryError] = useState("");
 
-// =========================
-// Upgrade Modal
-// =========================
+  const hasReachedProductLimit =
+    !isPlusUser && productList.length >= FREE_PRODUCT_LIMIT;
 
-const [showUpgradeModal, setShowUpgradeModal] =
-  useState(false);
+  // =========================
+  // Upgrade Modal
+  // =========================
+
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   // =========================
   // Dynamic Stats
   // =========================
@@ -63,12 +61,8 @@ const [showUpgradeModal, setShowUpgradeModal] =
   const productStats = useMemo(
     () => ({
       totalProducts: productList.length,
-      activeProducts: productList.filter(
-  (p) => p.available === true
-).length,
-outOfStock: productList.filter(
-  (p) => p.available === false
-).length,
+      activeProducts: productList.filter((p) => p.available === true).length,
+      outOfStock: productList.filter((p) => p.available === false).length,
       categories: new Set(productList.map((p) => p.category)).size,
     }),
     [productList],
@@ -87,84 +81,71 @@ outOfStock: productList.filter(
   // Add
   // =========================
 
-const handleAdd = () => {
-  // Free Tier Product Limit
-  if (hasReachedProductLimit) {
-    setShowUpgradeModal(true);
-    return;
-  }
+  const handleAdd = () => {
+    // Free Tier Product Limit
+    if (hasReachedProductLimit) {
+      setShowUpgradeModal(true);
+      return;
+    }
 
-  setSelectedProduct(null);
-  setModalMode("add");
-  setModalOpen(true);
-};
+    setSelectedProduct(null);
+    setModalMode("add");
+    setModalOpen(true);
+  };
   // =========================
   // Edit
   // =========================
 
-const handleEdit = (product) => {
-  setSelectedProduct({ ...product });
-  setModalMode("edit");
-  setModalOpen(true);
-};
-
-// =========================
-// Save Product
-// =========================
-
-const handleSaveProduct = (productData) => {
-  const formattedProduct = {
-    id:
-      modalMode === "add"
-        ? Date.now()
-        : productData.id,
-
-    sku:
-      productData.sku ||
-      `SKU-${Date.now().toString().slice(-5)}`,
-
-    name: productData.name,
-
-    description:
-      productData.description || "",
-
-    category: productData.category,
-
-    price: Number(productData.price),
-
-    stock: Number(productData.stock),
-
-    available: productData.available,
-
-    featured: productData.featured,
-
-    combo: productData.combo,
-
-    delivery: productData.delivery,
-
-    image:
-      productData.image ||
-      "https://placehold.co/600x600?text=Food",
+  const handleEdit = (product) => {
+    setSelectedProduct({ ...product });
+    setModalMode("edit");
+    setModalOpen(true);
   };
 
-  if (modalMode === "add") {
-    setProductList((prev) => [
-      formattedProduct,
-      ...prev,
-    ]);
-  } else {
-    setProductList((prev) =>
-      prev.map((item) =>
-        item.id === formattedProduct.id
-          ? formattedProduct
-          : item
-      )
-    );
-  }
+  // =========================
+  // Save Product
+  // =========================
 
-  setModalOpen(false);
-  setSelectedProduct(null);
-};
+  const handleSaveProduct = (productData) => {
+    const formattedProduct = {
+      id: modalMode === "add" ? Date.now() : productData.id,
+
+      sku: productData.sku || `SKU-${Date.now().toString().slice(-5)}`,
+
+      name: productData.name,
+
+      description: productData.description || "",
+
+      category: productData.category,
+
+      price: Number(productData.price),
+
+      stock: Number(productData.stock),
+
+      available: productData.available,
+
+      featured: productData.featured,
+
+      combo: productData.combo,
+
+      delivery: productData.delivery,
+
+      image: productData.image || "https://placehold.co/600x600?text=Food",
+    };
+
+    if (modalMode === "add") {
+      setProductList((prev) => [formattedProduct, ...prev]);
+    } else {
+      setProductList((prev) =>
+        prev.map((item) =>
+          item.id === formattedProduct.id ? formattedProduct : item,
+        ),
+      );
+    }
+
+    setModalOpen(false);
+    setSelectedProduct(null);
+  };
   // =========================
   // Delete
   // =========================
@@ -189,19 +170,17 @@ const handleSaveProduct = (productData) => {
 
   const filteredProducts = useMemo(() => {
     return productList.filter((product) => {
-      const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase()) || 
-      product.sku.toLowerCase().includes(search.toLowerCase());
-        
+      const matchesSearch =
+        product.name.toLowerCase().includes(search.toLowerCase()) ||
+        product.sku.toLowerCase().includes(search.toLowerCase());
 
       const matchesCategory =
         category === "All" || product.category === category;
 
       const matchesStatus =
         status === "All" ||
-        (status === "Available" &&
-          product.available === true) ||
-        (status === "Out of Stock" &&
-          product.available === false);
+        (status === "Available" && product.available === true) ||
+        (status === "Out of Stock" && product.available === false);
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
@@ -300,131 +279,119 @@ const handleSaveProduct = (productData) => {
     XLSX.writeFile(workbook, "products.xlsx");
   };
   return (
-        <motion.div
+    <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="space-y-6"
-    >
-    <div className="space-y-8">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".xlsx,.xls"
-        hidden
-        onChange={handleImport}
-      />
+      className="space-y-6">
+      <div className="space-y-8">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx,.xls"
+          hidden
+          onChange={handleImport}
+        />
 
-      <ProductsHeader
-        onAdd={handleAdd}
-        onImport={handleImportClick}
-        onExport={handleExport}
-      />
+        <ProductsHeader
+          onAdd={handleAdd}
+          onImport={handleImportClick}
+          onExport={handleExport}
+        />
 
-      <ProductStats stats={productStats} />
+        <ProductStats stats={productStats} />
 
-      <ProductFilters
-        search={search}
-        setSearch={setSearch}
-        category={category}
-        setCategory={setCategory}
-        status={status}
-        setStatus={setStatus}
-        view={view}
-        setView={setView}
-      />
+        <ProductFilters
+          search={search}
+          setSearch={setSearch}
+          category={category}
+          setCategory={setCategory}
+          status={status}
+          setStatus={setStatus}
+          view={view}
+          setView={setView}
+        />
 
-      <ProductGrid
-        products={filteredProducts}
-        view={view}
-        onView={handleView}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+        <ProductGrid
+          products={filteredProducts}
+          view={view}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
 
-      <ProductDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        product={selectedProduct}
-      />
+        <ProductDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          product={selectedProduct}
+        />
 
-      <ProductModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        mode={modalMode}
-        product={selectedProduct}
-        onSave={handleSaveProduct}
-      />
+        <ProductModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          mode={modalMode}
+          product={selectedProduct}
+          onSave={handleSaveProduct}
+        />
 
-      <DeleteProductModal
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onDelete={confirmDelete}
-        product={selectedProduct}
-      />
-      {showUpgradeModal && (
-  <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <DeleteProductModal
+          open={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          onDelete={confirmDelete}
+          product={selectedProduct}
+        />
+        {showUpgradeModal && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-10 w-10 text-amber-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.8 7.1 18.2l.9-5.5-4-3.9L9.5 8 12 3z"
+                  />
+                </svg>
+              </div>
 
-    <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
+              <h2 className="mt-6 text-center text-2xl font-bold text-slate-800">
+                Product Limit Reached
+              </h2>
 
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
+              <p className="mt-3 text-center text-slate-500">
+                You've used all <strong>10 product slots</strong>.
+              </p>
 
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-10 w-10 text-amber-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.8 7.1 18.2l.9-5.5-4-3.9L9.5 8 12 3z"
-          />
-        </svg>
+              <p className="mt-1 text-center text-slate-500">
+                Upgrade to <strong>BizBite Plus</strong> for unlimited products.
+              </p>
 
+              <div className="mt-8 flex gap-3">
+                <button
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="flex-1 rounded-xl border border-slate-300 px-5 py-3 font-medium hover:bg-slate-50">
+                  Maybe Later
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowUpgradeModal(false);
+
+                    // TODO: Navigate to Upgrade page
+                  }}
+                  className="flex-1 rounded-xl bg-[#16522d] px-5 py-3 font-semibold text-white hover:bg-[#124324]">
+                  Upgrade Now
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      <h2 className="mt-6 text-center text-2xl font-bold text-slate-800">
-        Product Limit Reached
-      </h2>
-
-      <p className="mt-3 text-center text-slate-500">
-        You've used all <strong>10 product slots</strong>.
-      </p>
-
-      <p className="mt-1 text-center text-slate-500">
-        Upgrade to <strong>BizBite Plus</strong> for unlimited products.
-      </p>
-
-      <div className="mt-8 flex gap-3">
-
-        <button
-          onClick={() => setShowUpgradeModal(false)}
-          className="flex-1 rounded-xl border border-slate-300 px-5 py-3 font-medium hover:bg-slate-50"
-        >
-          Maybe Later
-        </button>
-
-        <button
-          onClick={() => {
-            setShowUpgradeModal(false);
-
-            // TODO: Navigate to Upgrade page
-          }}
-          className="flex-1 rounded-xl bg-[#16522d] px-5 py-3 font-semibold text-white hover:bg-[#124324]"
-        >
-          Upgrade Now
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-)}
-    </div>
     </motion.div>
   );
 }

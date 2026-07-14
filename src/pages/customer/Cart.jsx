@@ -1,226 +1,368 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Trash2, ShoppingBag, Plus, Minus, AlertTriangle } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useCart } from "../../context/CartContext";
+import { useNavigate } from "react-router-dom";
 
-const PLUS_PURPLE = "#E8622D";
-const PLUS_LAVENDER = "#FFEDD5";
-const PRIMARY_GREEN = "#E8622D";
-const CHARCOAL = "#1C1C1C";
-const CREAM = "#FAFAF5";
+import SectionHeader from "../../components/customer/common/SectionHeader";
+import PrimaryButton from "../../components/customer/common/PrimaryButton";
+import OrderSummary from "../../components/customer/orders/OrderSummary";
 
-const MIN_ORDER = 1000;
+import { motion } from "framer-motion";
+import CouponCard from "../../components/customer/rewards/CouponCard";
 
-const PlusBadge = () => (
-  <span
-    className="absolute -top-2.5 left-3 z-10 text-white text-[14px] font-bold px-2.5 py-0.5 rounded-full shadow-sm"
-    style={{ backgroundColor: PLUS_PURPLE }}
-  >
-    Plus
-  </span>
-);
-
-const PlusSection = ({ label, children }) => (
-  <div
-    className="relative rounded-2xl pt-6 px-4 pb-4"
-    style={{ backgroundColor: PLUS_LAVENDER }}
-  >
-    <PlusBadge />
-    {label && (
-      <h3
-        className="font-bold text-[18px] mb-2.5"
-        style={{ color: PLUS_PURPLE }}
-      >
-        {label}
-      </h3>
-    )}
-    {children}
-  </div>
-);
+import couponsData from "../../data/customer/couponsData";
+import {
+  loyaltyData,
+} from "../../data/customer/rewardsData";
 
 const Cart = () => {
-  const { cart, updateQty, removeFromCart, totalItems, totalPrice } = useCart();
   const navigate = useNavigate();
 
-  // Empty state
-  if (cart.length === 0) {
-    return (
-      <div
-        className="flex flex-col items-center justify-center min-h-screen px-4 text-center"
-        style={{ fontFamily: "Arial, sans-serif", backgroundColor: CREAM }}
-      >
-        <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-5">
-          <ShoppingBag size={40} className="text-gray-300" />
-        </div>
-        <h2 className="font-bold" style={{ fontSize: "24px", color: CHARCOAL }}>
-          Your cart is empty
-        </h2>
-        <p className="text-gray-400 text-[18px] mt-2">
-          Add items from the store to get started
-        </p>
-        <button
-          onClick={() => navigate("/")}
-          className="mt-6 text-white rounded-xl px-8 font-bold"
-          style={{ minHeight: "48px", fontFamily: "Arial, sans-serif", backgroundColor: PRIMARY_GREEN }}
-        >
-          Browse Store
-        </button>
-      </div>
-    );
+const {
+  cartItems,
+  updateItem,
+  removeItem,
+} = useCart();
+
+  const [selectedCoupon, setSelectedCoupon] =
+    useState(null);
+
+const updateQuantity = async (
+  item,
+  type
+) => {
+  const quantity =
+    type === "inc"
+      ? item.quantity + 1
+      : item.quantity - 1;
+
+  if (quantity <= 0) {
+    await removeItem(item.id);
+    return;
   }
 
-  const grandTotal = totalPrice;
-  const amountToMinOrder = Math.max(0, MIN_ORDER - totalPrice);
+  await updateItem(
+    item.id,
+    quantity
+  );
+};
 
-  return (
-    <div
-      className="min-h-screen"
-      style={{ fontFamily: "Arial, sans-serif", backgroundColor: CREAM }}
-    >
+  const summary = useMemo(() => {
+    const subtotal =
+      cartItems.reduce(
+  (sum, item) =>
+    sum + item.total,
+  0
+)
+
+const discount = selectedCoupon
+  ? selectedCoupon.discountType === "flat"
+    ? selectedCoupon.discount
+    : Math.round(
+        (subtotal * selectedCoupon.discount) / 100
+      )
+  : 0;
+
+    const delivery =
+      subtotal >= 499
+        ? 0
+        : 40;
+
+    const tax = Math.round(
+      subtotal * 0.05
+    );
+
+    return {
+      subtotal,
+      delivery,
+      tax,
+      discount,
+      total:
+        subtotal +
+        delivery +
+        tax -
+        discount,
+    };
+  }, [
+    cartItems,
+    selectedCoupon,
+  ]);
+    return (
+               <motion.div
+  initial={{ opacity: 0, y: 15 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{
+    duration: 0.4,
+    ease: [0.22, 1, 0.36, 1],
+  }}
+  className="space-y-6"
+>
+    <div className="space-y-8 lg:pl-10 pb-32">
+
       {/* Header */}
-      <div className="px-4 pt-5 pb-3 flex items-center gap-2">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center justify-center -ml-1"
-          style={{ minHeight: "36px", minWidth: "36px", color: CHARCOAL }}
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <h1 className="font-bold" style={{ fontSize: "22px", color: CHARCOAL }}>
-          Your cart
-        </h1>
-        <span className="text-[18px] text-gray-400 ml-1">({totalItems} items)</span>
-      </div>
 
-      <div className="px-4 pb-40 space-y-3">
+      <SectionHeader
+        title="Cart"
+        subtitle={`${
+  cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  )
+} items in your cart`}
+      />
 
-        {/* Cart Items */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          {cart.map((item, index) => (
-            <div key={item.id}>
-              <div className="p-4 flex items-center gap-3">
 
-                {/* Image */}
-                <div className="w-16 h-16 rounded-xl bg-gray-100 shrink-0 overflow-hidden">
+      {/* Cart Items */}
+
+      <section className="space-y-5">
+
+        {cartItems.length === 0 ? (
+
+          <div
+            className="
+              rounded-[28px]
+
+              border-2
+              border-dashed
+              border-slate-300
+
+              bg-white
+
+              p-14
+
+              text-center
+            "
+          >
+
+            <h3 className="text-xl font-bold text-slate-900">
+              Your Cart is Empty
+            </h3>
+
+            <p className="mt-2 text-slate-500">
+              Add delicious items from the menu.
+            </p>
+
+            <PrimaryButton
+              className="mt-6"
+              onClick={() =>
+                navigate("/customer/menu")
+              }
+            >
+              Browse Menu
+            </PrimaryButton>
+
+          </div>
+
+        ) : (
+
+          <div className="space-y-4">
+
+            {cartItems.map((item) => (
+
+              <div
+                key={item.id}
+                className="
+                  rounded-[28px]
+
+                  border
+                  border-slate-200
+
+                  bg-white
+
+                  p-5
+                "
+              >
+
+                <div className="flex gap-4">
+
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="w-full h-full object-cover"
+                    className="
+                      h-24
+                      w-24
+
+                      rounded-2xl
+
+                      object-cover
+                    "
                   />
-                </div>
 
-                {/* Details */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-[18px]" style={{ color: CHARCOAL }}>{item.name}</h3>
-                  <p className="font-bold text-[18px] mt-0.5" style={{ color: PRIMARY_GREEN }}>
-                    ₹{item.price}
-                  </p>
-                </div>
+                  <div className="flex-1">
 
-                {/* Qty stepper + remove */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-                    <button
-                      onClick={() => updateQty(item.id, item.qty - 1)}
-                      className="flex items-center justify-center font-bold"
-                      style={{ minHeight: "36px", minWidth: "36px", color: PRIMARY_GREEN }}
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <span
-                      className="font-bold text-[18px] px-2"
-                      style={{ minWidth: "24px", textAlign: "center", color: CHARCOAL }}
-                    >
-                      {item.qty}
-                    </span>
-                    <button
-                      onClick={() => updateQty(item.id, item.qty + 1)}
-                      className="flex items-center justify-center font-bold"
-                      style={{ minHeight: "36px", minWidth: "36px", color: PRIMARY_GREEN }}
-                    >
-                      <Plus size={14} />
-                    </button>
+                    <h3 className="font-bold text-slate-900">
+                      {item.name}
+                    </h3>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      ₹{item.price} each
+                    </p>
+
+
+                    <div className="mt-4 flex items-center justify-between">
+
+                      <div
+                        className="
+                          flex
+                          items-center
+                          gap-3
+                        "
+                      >
+
+                        <button
+onClick={() =>
+  updateQuantity(
+    item,
+    "dec"
+  )
+}
+                          className="
+                            h-9
+                            w-9
+
+                            rounded-full
+
+                            border
+                            border-slate-200
+                          "
+                        >
+                          -
+                        </button>
+
+
+                        <span className="font-semibold">
+                          {item.quantity}
+                        </span>
+
+
+                        <button
+onClick={() =>
+  updateQuantity(
+    item,
+    "inc"
+  )
+}
+                          className="
+                            h-9
+                            w-9
+
+                            rounded-full
+
+                            text-white
+                          "
+                          style={{
+                            background:
+                              "var(--primary)",
+                          }}
+                        >
+                          +
+                        </button>
+
+                      </div>
+
+
+                      <button
+                        onClick={() =>
+                          removeItem(
+                            item.id
+                          )
+                        }
+                        className="
+                          text-sm
+                          font-medium
+                          text-red-500
+                        "
+                      >
+                        Remove
+                      </button>
+
+                    </div>
+
                   </div>
 
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="flex items-center justify-center text-red-400"
-                    style={{ minHeight: "36px", minWidth: "36px" }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
                 </div>
+
               </div>
 
-              {/* Item subtotal */}
-              <div className="px-4 pb-3 flex justify-between items-center">
-                <span className="text-[16px] text-gray-400">
-                  {item.qty} x ₹{item.price}
-                </span>
-                <span className="text-[18px] font-bold" style={{ color: CHARCOAL }}>
-                  ₹{item.price * item.qty}
-                </span>
-              </div>
+            ))}
 
-              {index < cart.length - 1 && (
-                <div className="mx-4 border-t border-gray-100" />
-              )}
-            </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Minimum order nudge */}
-        {amountToMinOrder > 0 && (
-          <PlusSection>
-            <p className="font-semibold text-[18px] flex items-center gap-2" style={{ color: PLUS_PURPLE }}>
-              <AlertTriangle size={16} />
-              Add ₹{amountToMinOrder} more to reach ₹{MIN_ORDER.toLocaleString("en-IN")} minimum order
-            </p>
-          </PlusSection>
         )}
 
-        {/* Bill Summary */}
-        <div className="bg-white rounded-2xl shadow-sm p-4">
-          <h2 className="font-bold mb-3" style={{ fontSize: "19px", color: CHARCOAL }}>
-            Bill summary
-          </h2>
+      </section>
 
-          <div className="space-y-2">
-            <div className="flex justify-between text-[18px] text-gray-500">
-              <span>Item total</span>
-              <span className="font-semibold" style={{ color: CHARCOAL }}>₹{totalPrice}</span>
-            </div>
-          </div>
 
-          <div className="border-t border-gray-100 mt-3 pt-3 flex justify-between items-center">
-            <span className="font-bold" style={{ fontSize: "19px", color: CHARCOAL }}>
-              Running total
-            </span>
-            <span className="font-bold" style={{ fontSize: "21px", color: PRIMARY_GREEN }}>
-              ₹{grandTotal}
-            </span>
-          </div>
+  
+
+      {/* Coupons */}
+
+      <section className="space-y-4">
+
+        <h2 className="text-xl font-bold text-slate-900">
+          Available Coupons
+        </h2>
+
+
+        <div className="grid gap-4 lg:grid-cols-2">
+
+          {couponsData
+            .filter(
+              (coupon) =>
+                !coupon.expired
+            )
+            .map((coupon) => (
+
+              <CouponCard
+                key={coupon.id}
+                coupon={coupon}
+                applied={
+                  selectedCoupon?.id ===
+                  coupon.id
+                }
+                onApply={() =>
+                  setSelectedCoupon(
+                    coupon
+                  )
+                }
+              />
+
+            ))}
+
         </div>
 
-      </div>
+      </section>
 
-      {/* Checkout Button — fixed bottom */}
-      <div className="fixed bottom-0 left-0 right-0">
-        <button
-          onClick={() => navigate("/checkout")}
-          className="w-full text-white font-bold flex items-center justify-center"
-          style={{
-            minHeight: "56px",
-            fontSize: "19px",
-            fontFamily: "Arial, sans-serif",
-            backgroundColor: PRIMARY_GREEN,
-          }}
+
+     {/* Order Summary */}
+<section>
+<OrderSummary
+  subtotal={summary.subtotal}
+  deliveryFee={summary.delivery}
+  tax={summary.tax}
+  packagingFee={0}
+  discount={summary.discount}
+  coupon={selectedCoupon?.code || ""}
+  loyaltyPoints={loyaltyData.points || 0}
+  total={summary.total}
+/>
+        <PrimaryButton
+          className="
+            mt-6
+            w-full
+          "
+          onClick={() =>
+            navigate(
+              "/customer/checkout"
+            )
+          }
         >
-          Proceed to checkout
-        </button>
-      </div>
+          Proceed To Checkout
+        </PrimaryButton>
+</section>        
     </div>
+    </motion.div>
   );
 };
+
 
 export default Cart;

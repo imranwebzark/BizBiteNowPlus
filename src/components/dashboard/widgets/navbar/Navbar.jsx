@@ -6,7 +6,7 @@ import SearchBar from "../../SearchBar";
 import NotificationButton from "./NotificationButton";
 import ProfileMenu from "../../ProfileMenu";
 const user = {
-  subscription: "free", // "free" | "plus"
+  subscription: "plus", // "free" | "plus"
 };
 
 const isPlus = user.subscription === "plus";

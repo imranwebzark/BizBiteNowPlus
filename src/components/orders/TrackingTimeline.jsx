@@ -10,7 +10,7 @@ import {
 // Replace with backend later
 // ==============================
 
-const isPlusUser = false;
+const isPlusUser = true;
 const steps = isPlusUser
   ? [
       {

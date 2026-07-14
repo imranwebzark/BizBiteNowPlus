@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 // Temporary
 // Replace with backend value
-const isPlusUser = false;
+const isPlusUser = true;
 const PaymentSettingsCard = () => {
   return (
     <motion.section

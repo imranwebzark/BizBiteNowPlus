@@ -15,13 +15,14 @@ function DashboardWidget({
         border-gray-200
         bg-white
         shadow-sm
+        
         transition-shadow
         duration-300
         hover:shadow-lg
         ${className}
       `}
     >
-      <div className="flex items-start overflow-y-auto justify-between border-b border-gray-100 px-6 py-5">
+      <div className="flex items-start max-h-400 overflow-y-auto justify-between border-b border-gray-100 px-6 py-5">
         <div>
           <h2 className="text-lg font-semibold text-[#1A4D2E]">
             {title}

@@ -11,7 +11,7 @@ const ActivityItem = ({
   const Icon = config.icon;
 
   return (
-    <div className="relative flex gap-4">
+    <div className="relative flex  gap-4">
       {!isLast && (
         <div className="absolute left-5 top-12 h-full w-px bg-gray-200" />
       )}

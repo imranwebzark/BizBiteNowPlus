@@ -15,7 +15,7 @@ import {
 } from "../../../api/loyalty";
 // Temporary
 // Replace with backend subscription later
-const isPlusUser = false;
+const isPlusUser = true;
 const REWARD_PRESETS = {
   item: "Free dessert",
   discount: "20% off next order",

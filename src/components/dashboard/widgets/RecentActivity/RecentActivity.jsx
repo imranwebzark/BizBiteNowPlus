@@ -9,14 +9,7 @@ const RecentActivity = () => {
     <DashboardWidget
       title="Recent Activity"
       subtitle="Latest updates from your business"
-      action={
-        <Link
-          to="/seller/activity"
-          className="text-sm font-medium text-[#1A4D2E] hover:underline"
-        >
-          View All
-        </Link>
-      }
+
     >
       {activities.length === 0 ? (
         <EmptyState
@@ -24,15 +17,15 @@ const RecentActivity = () => {
           description="Business activity will appear here."
         />
       ) : (
-        <div>
-          {activities.map((activity, index) => (
-            <ActivityItem
-              key={activity.id}
-              activity={activity}
-              isLast={index === activities.length - 1}
-            />
-          ))}
-        </div>
+<div className="max-h-[420px] overflow-y-auto scrollbar-hide pr-1">
+  {activities.map((activity, index) => (
+    <ActivityItem
+      key={activity.id}
+      activity={activity}
+      isLast={index === activities.length - 1}
+    />
+  ))}
+</div>
       )}
     </DashboardWidget>
   );

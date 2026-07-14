@@ -34,101 +34,86 @@ export default function Earnings() {
     setPayment("all");
   };
 
-const handleExport = () => {
-  const workbook = XLSX.utils.book_new();
+  const handleExport = () => {
+    const workbook = XLSX.utils.book_new();
 
-  // Summary
-  const summaryData = [
-    {
-      "Today's Earnings": earningsSummary.todayEarnings,
-      "Today's Orders": earningsSummary.todayOrders,
-      "Average Order": earningsSummary.averageOrderValue,
-      "COD Pending": earningsSummary.codPending,
-      "Online Received": earningsSummary.onlineReceived,
-      "Monthly Revenue": earningsSummary.monthlyRevenue,
-      "Revenue Growth (%)": earningsSummary.revenueGrowth,
-    },
-  ];
+    // Summary
+    const summaryData = [
+      {
+        "Today's Earnings": earningsSummary.todayEarnings,
+        "Today's Orders": earningsSummary.todayOrders,
+        "Average Order": earningsSummary.averageOrderValue,
+        "COD Pending": earningsSummary.codPending,
+        "Online Received": earningsSummary.onlineReceived,
+        "Monthly Revenue": earningsSummary.monthlyRevenue,
+        "Revenue Growth (%)": earningsSummary.revenueGrowth,
+      },
+    ];
 
-  const summarySheet = XLSX.utils.json_to_sheet(summaryData);
-  XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
+    const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
 
-  // Orders
-  const ordersSheet = XLSX.utils.json_to_sheet(
-    todaysOrders.map((order) => ({
-      OrderID: order.id,
-      Customer: order.customer,
-      Payment: order.payment,
-      Status: order.status,
-      Amount: order.amount,
-      Time: order.time,
-    }))
-  );
-
-  XLSX.utils.book_append_sheet(workbook, ordersSheet, "Orders");
-
-  // Earnings History
-  const historySheet = XLSX.utils.json_to_sheet(
-    earningsHistory.map((item) => ({
-      Date: item.date,
-      Orders: item.orders,
-      Revenue: item.revenue,
-    }))
-  );
-
-  XLSX.utils.book_append_sheet(workbook, historySheet, "History");
-
-  // Customers
-  const customersSheet = XLSX.utils.json_to_sheet(
-    regularCustomers.map((customer) => ({
-      Name: customer.name,
-      Orders: customer.orders,
-      LifetimeSpend: customer.spent,
-      LastOrder: customer.lastOrder,
-      Tier: customer.status,
-    }))
-  );
-
-  XLSX.utils.book_append_sheet(workbook, customersSheet, "Customers");
-
-  XLSX.writeFile(
-    workbook,
-    `Earnings_Report_${new Date().toISOString().slice(0, 10)}.xlsx`
-  );
-};
-
-  const filteredOrders = todaysOrders.filter(
-    (order) => {
-      const matchesSearch =
-        `${order.customer} ${order.id}`
-          .toLowerCase()
-          .includes(search.toLowerCase());
-
-      const matchesPayment =
-        payment === "all"
-          ? true
-          : order.payment === payment;
-
-      return (
-        matchesSearch &&
-        matchesPayment
-      );
-    }
-  );
-
-  const filteredHistory =
-    earningsHistory.filter((item) =>
-      item.date
-        .toLowerCase()
-        .includes(search.toLowerCase())
+    // Orders
+    const ordersSheet = XLSX.utils.json_to_sheet(
+      todaysOrders.map((order) => ({
+        OrderID: order.id,
+        Customer: order.customer,
+        Payment: order.payment,
+        Status: order.status,
+        Amount: order.amount,
+        Time: order.time,
+      })),
     );
 
-  const filteredCustomers =
-    regularCustomers.filter((customer) =>
-      customer.name
-        .toLowerCase()
-        .includes(search.toLowerCase())
+    XLSX.utils.book_append_sheet(workbook, ordersSheet, "Orders");
+
+    // Earnings History
+    const historySheet = XLSX.utils.json_to_sheet(
+      earningsHistory.map((item) => ({
+        Date: item.date,
+        Orders: item.orders,
+        Revenue: item.revenue,
+      })),
     );
+
+    XLSX.utils.book_append_sheet(workbook, historySheet, "History");
+
+    // Customers
+    const customersSheet = XLSX.utils.json_to_sheet(
+      regularCustomers.map((customer) => ({
+        Name: customer.name,
+        Orders: customer.orders,
+        LifetimeSpend: customer.spent,
+        LastOrder: customer.lastOrder,
+        Tier: customer.status,
+      })),
+    );
+
+    XLSX.utils.book_append_sheet(workbook, customersSheet, "Customers");
+
+    XLSX.writeFile(
+      workbook,
+      `Earnings_Report_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    );
+  };
+
+  const filteredOrders = todaysOrders.filter((order) => {
+    const matchesSearch = `${order.customer} ${order.id}`
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesPayment = payment === "all" ? true : order.payment === payment;
+
+    return matchesSearch && matchesPayment;
+  });
+
+  const filteredHistory = earningsHistory.filter((item) =>
+    item.date.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const filteredCustomers = regularCustomers.filter((customer) =>
+    customer.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   return (
     <motion.div
@@ -143,23 +128,16 @@ const handleExport = () => {
       transition={{
         duration: 0.35,
       }}
-      className="space-y-8"
-    >
+      className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">
-          Earnings
-        </h1>
+        <h1 className="text-3xl font-bold text-slate-900">Earnings</h1>
 
         <p className="mt-2 text-slate-500">
-          Track earnings, payments,
-          customer spending and revenue
-          trends.
+          Track earnings, payments, customer spending and revenue trends.
         </p>
       </div>
 
-      <EarningsSummaryCards
-        summary={earningsSummary}
-      />
+      <EarningsSummaryCards summary={earningsSummary} />
 
       <EarningsChart
         data={earningsChartData}
@@ -168,21 +146,13 @@ const handleExport = () => {
         onRefresh={handleRefresh}
       />
 
-      <TodaysEarnings
-        summary={earningsSummary}
-      />
+      <TodaysEarnings summary={earningsSummary} />
 
-      <CODPaymentTable
-        orders={filteredOrders}
-      />
+      <CODPaymentTable orders={filteredOrders} />
 
-      <EarningsHistory
-        history={filteredHistory}
-      />
+      <EarningsHistory history={filteredHistory} />
 
-      <RegularCustomers
-        customers={filteredCustomers}
-      />
+      <RegularCustomers customers={filteredCustomers} />
     </motion.div>
   );
 }
