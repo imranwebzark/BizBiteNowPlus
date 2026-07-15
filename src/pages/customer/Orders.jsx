@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+// import SearchBar from "../../components/customer/orders/OrderSearchFilter";
+import OrderSearchFilter from "../../components/customer/orders/OrderSearchFilter";
+import ModernOrderCard from "../../components/customer/orders/ModernOrderCard";
 import {
   CheckCircle2,
   ShoppingBag,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionHeader from "../../components/customer/common/SectionHeader";
-
+// import OrderCard from "../../components/customer/orders/OrderCard";
 import CurrentOrderCard from "../../components/customer/orders/OrderCard";
 import OrderHistoryCard from "../../components/customer/orders/OrderHistory";
 import OrderTimeline from "../../components/customer/orders/OrderTimeline";
 import ReorderButton from "../../components/customer/orders/ReorderButton";
-
+import OrderTabs from "../../components/customer/orders/OrderTabs";
 import {
   getCurrentOrders,
   getOrderHistory,
@@ -26,10 +28,48 @@ const Orders = () => {
 
 const [currentOrders, setCurrentOrders] =
   useState([]);
+const [search, setSearch] = useState("");
 
+// ActiveTab
+const [activeTab, setActiveTab] =
+  useState("All Orders");
 
 const [history, setHistory] =
   useState([]);
+  const allOrders = [...currentOrders, ...history];
+
+const filteredOrders = allOrders.filter((order) => {
+  // Search Filter
+  const keyword = search.toLowerCase();
+
+  const matchesSearch =
+    order.restaurant?.toLowerCase().includes(keyword) ||
+    order.id?.toLowerCase().includes(keyword) ||
+    order.status?.toLowerCase().includes(keyword);
+
+  // Tab Filter
+  let matchesTab = true;
+
+  switch (activeTab) {
+    case "Ongoing":
+      matchesTab = order.status === "Ongoing";
+      break;
+
+    case "Delivered":
+      matchesTab = order.status === "Delivered";
+      break;
+
+    case "Cancelled":
+      matchesTab = order.status === "Cancelled";
+      break;
+
+    case "All Orders":
+    default:
+      matchesTab = true;
+  }
+
+  return matchesSearch && matchesTab;
+});
 
 
 const [loading, setLoading] =
@@ -38,7 +78,25 @@ const [loading, setLoading] =
   const [reordering, setReordering] =
     useState(null);
 
+const filteredCurrentOrders = currentOrders.filter((order) => {
+  const keyword = search.toLowerCase();
 
+  return (
+    order.restaurant?.toLowerCase().includes(keyword) ||
+    order.id?.toLowerCase().includes(keyword) ||
+    order.status?.toLowerCase().includes(keyword)
+  );
+});
+
+const filteredHistory = history.filter((order) => {
+  const keyword = search.toLowerCase();
+
+  return (
+    order.restaurant?.toLowerCase().includes(keyword) ||
+    order.id?.toLowerCase().includes(keyword) ||
+    order.status?.toLowerCase().includes(keyword)
+  );
+});
 
   const handleReorder = (order) => {
 
@@ -75,6 +133,7 @@ const [loading, setLoading] =
 useEffect(() => {
 
   const loadOrders = async () => {
+    
 
     try {
 
@@ -89,10 +148,10 @@ useEffect(() => {
   getOrderHistory(customerId),
 ]);
 
+
 setCurrentOrders(
   currentRes.data?.data || []
 );
-
 
 setHistory(
   historyRes.data?.data || []
@@ -121,6 +180,7 @@ setHistory(
 
 }, []);
 if (loading) {
+
   return (
     <div
       className="
@@ -134,9 +194,8 @@ if (loading) {
       Loading Orders...
     </div>
   );
+  
 }
-
-
   return (
                <motion.div
   initial={{ opacity: 0, y: 15 }}
@@ -162,17 +221,57 @@ if (loading) {
   "
 >
 
+<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+{/* Section header */}
+  <SectionHeader
+    title="My Orders"
+    subtitle="Track current and previous orders"
+  />
 
-      <SectionHeader
-        title="My Orders"
-        subtitle="Track current and previous orders"
-      />
+ <OrderSearchFilter
+  search={search}
+  setSearch={setSearch}
+  onClearSearch={() => setSearch("")}
+  onFilterClick={() => console.log("Filter")}
+/>
+
+
+</div>
+{/* Order Tab */}
+  <OrderTabs
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+/>
+
+{/* <div className="space-y-5">
+
+  {demoOrders.map((order) => (
+
+    <ModernOrderCard
+      key={order.id}
+      order={order}
+      onTrack={() => {}}
+      onView={() => {}}
+      onReorder={() => {}}
+    />
+
+  ))}
+
+</div> */}
+
+
+
+
+
+
+      {/* Search bar */}
+{/* <SearchBar /> */}
 
 
 
       {/* Current Order */}
 
-      <section className="space-y-5">
+      {/* <section className="space-y-5">
 
 
         <div
@@ -237,30 +336,25 @@ if (loading) {
   </div>
 ) : (
   <div className="space-y-6">
-    {currentOrders.map((order) => (
+    {filteredCurrentOrders.map((order) => (
       <div key={order.id} className="space-y-4">
         <CurrentOrderCard
-          order={order}
-          onTrack={() =>
-            navigate(`/customer/orders/${order.id}`, {
-              state: { order },
-            })
-          }
-          onView={() => handleViewOrder(order)}
-        />
+  order={order}
+  onReorder={() => handleReorder(order)}
+  onView={() => handleViewOrder(order)}
+/>
 
-        <OrderTimeline
-          timeline={order.tracking?.steps || []}
-          currentStep={order.tracking?.currentStep}
-        />
+       
       </div>
-    ))}
+    ))
+    }
   </div>
-)}
+)
+}
 
 
 
-      </section>
+      </section> */}
 
 
 
@@ -268,7 +362,7 @@ if (loading) {
 
       {/* History */}
 
-      <section className="space-y-5">
+      {/* <section className="space-y-5">
 
 
         <h2 className="text-xl font-bold text-slate-900">
@@ -317,7 +411,7 @@ if (loading) {
 
 
               {
-                history.map(
+                filteredHistory.map(
                   (order)=>(
 
 
@@ -331,17 +425,13 @@ if (loading) {
                     >
 
 
-                      <OrderHistoryCard
-
-                        order={order}
-
-                        onView={() =>
-                          handleViewOrder(
-                            order
-                          )
-                        }
-
-                      />
+                              <OrderHistoryCard
+                        order={{
+                      ...order,
+                       onReorder: () => handleReorder(order),
+                        }}
+                    onView={() => handleViewOrder(order)}
+                            />
 
 
 
@@ -387,7 +477,7 @@ if (loading) {
         }
 
 
-      </section>
+      </section> */}
 
 
     </div>

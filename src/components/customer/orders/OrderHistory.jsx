@@ -146,24 +146,50 @@ const OrderHistoryCard = ({ order, onView }) => {
             </p>
           </div>
 
-          <button
-            onClick={() => onView?.(order)}
-            className="
-              mt-4
+          <div className="mt-5 flex justify-end gap-3">
 
-              text-sm
+  <button
+  onClick={(e) => {
+    e.stopPropagation();
+    onView?.();
+  }}
+  className="
+    rounded-xl
+    border
+    border-slate-300
+    px-5
+    py-2.5
+    text-sm
+    font-semibold
+    hover:bg-slate-50
+  "
+>
+  View Details
+</button>
 
-              font-semibold
 
-              text-green-700
 
-              transition
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      order.onReorder?.();
+    }}
+    className="
+      rounded-xl
+      bg-orange-500
+      px-5
+      py-2.5
+      text-sm
+      font-semibold
+      text-white
+      transition
+      hover:bg-orange-600
+    "
+  >
+    Reorder
+  </button>
 
-              hover:underline
-            "
-          >
-            View Order
-          </button>
+</div>
         </div>
       </div>
     </div>

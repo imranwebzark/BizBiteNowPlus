@@ -69,7 +69,7 @@ const OrderDetails = () => {
 
 
         {
-          order.items?.map(
+          order.items.map(
             item=>(
               <div
                 key={item.id}

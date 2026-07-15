@@ -1,167 +1,180 @@
 import {
-  ChevronRight,
-  RotateCcw,
-  Receipt,
+  CalendarDays,
   Clock3,
-  Star,
+  MapPin,
+  ChevronRight,
 } from "lucide-react";
 
-import Card from "../common/Card";
-import Badge from "../common/Badge";
-import PrimaryButton from "../common/PrimaryButton";
-import SecondaryButton from "../common/SecondaryButton";
+const statusStyle = {
+  Delivered:
+    "bg-green-100 text-green-700",
 
-const statusColor = {
-  Delivered: "#16A34A",
-  Preparing: "#F59E0B",
-  Confirmed: "#2563EB",
-  Cancelled: "#DC2626",
-  "Out for Delivery": "#7C3AED",
+  Ongoing:
+    "bg-orange-100 text-orange-600",
+
+  Cancelled:
+    "bg-red-100 text-red-600",
 };
 
 const OrderCard = ({
   order,
+  
   onView,
   onReorder,
-  onRate,
 }) => {
-  if (!order) return null;
-
   return (
-    <Card
-      padding="none"
-      className="overflow-hidden"
+    <div
+      className="
+        rounded-2xl
+        border
+        border-slate-200
+        bg-white
+        p-5
+        shadow-sm
+        transition-all
+        hover:shadow-md
+      "
     >
-      {/* Header */}
+      {/* Top */}
 
-      <div className="border-b border-slate-100 p-5">
-        <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between">
+
+        <div className="flex gap-4">
+
+          <img
+            src={order.image}
+            alt={order.restaurant}
+            className="
+              h-20
+              w-20
+              rounded-xl
+              object-cover
+            "
+          />
+
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Order ID
+
+            <h3 className="text-lg font-bold text-slate-900">
+              {order.restaurant}
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Order #{order.id}
             </p>
 
-            <h3 className="mt-1 text-lg font-bold text-slate-900">
-              {order.id}
-            </h3>
-          </div>
+            <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-500">
 
+              <span className="flex items-center gap-1">
+                <CalendarDays size={16} />
+                {order.date}
+              </span>
 
-        </div>
-      </div>
+              <span className="flex items-center gap-1">
+                <Clock3 size={16} />
+                {order.time}
+              </span>
 
-      {/* Products */}
-
-      <div className="space-y-4 p-5">
-        {order.items.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center gap-4"
-          >
-            <img
-              src={item.image}
-              alt={item.name}
-              className="
-                h-16
-                w-16
-                rounded-2xl
-                object-cover
-              "
-            />
-
-            <div className="flex-1">
-              <h4 className="font-semibold text-slate-900">
-                {item.name}
-              </h4>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Qty : {item.quantity}
-              </p>
             </div>
 
-            <span className="font-bold text-slate-900">
-              ₹{item.total}
-            </span>
           </div>
-        ))}
-      </div>
 
-      {/* Footer */}
-
-      <div
-        className="
-          border-t
-          border-slate-100
-          bg-slate-50
-          p-5
-        "
-      >
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          {/* Left */}
-
-<div className="flex items-center gap-2 text-sm text-slate-500">
-  <Clock3 size={15} />
-  {order.createdAt
-    ? new Date(order.createdAt).toLocaleString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    : "--"}
-</div>
-
-<div className="flex items-center gap-2">
-  <Receipt
-    size={16}
-    style={{
-      color: "var(--primary)",
-    }}
-  />
-
-<span className="font-semibold text-slate-900">
-  ₹{(order.summary?.total ?? 0).toLocaleString("en-IN")}
-</span>
-</div>
-       
-
-          {/* Right */}
-
-          <div className="flex flex-wrap gap-3">
-            {order.status === "Delivered" && (
-              <>
-                <SecondaryButton
-                  icon={Star}
-                  onClick={() => onRate?.(order)}
-                  size="sm"
-                >
-                  Rate
-                </SecondaryButton>
-
-                <PrimaryButton
-                  icon={RotateCcw}
-                  onClick={() =>
-                    onReorder?.(order)
-                  }
-                  size="sm"
-                >
-                  Reorder
-                </PrimaryButton>
-              </>
-            )}
-
-            <SecondaryButton
-              icon={ChevronRight}
-              onClick={() => onView?.(order)}
-              size="sm"
-            >
-              Details
-            </SecondaryButton>
-          </div>
         </div>
+
+        <span
+          className={`
+            rounded-full
+            px-3
+            py-1
+            text-xs
+            font-semibold
+            ${statusStyle[order.status]}
+          `}
+        >
+          {order.status}
+        </span>
+
       </div>
-    </Card>
+
+      {/* Divider */}
+
+      <div className="my-5 border-t border-slate-200" />
+
+      {/* Bottom */}
+
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+        <div>
+
+          <p className="text-sm text-slate-500">
+            {order.items} Items
+          </p>
+
+          <h2 className="mt-1 text-xl font-bold text-slate-900">
+            ₹ {order.total}
+          </h2>
+
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+
+          <button
+  onClick={onReorder}
+  className="
+    rounded-xl
+    bg-green-900
+    px-5
+    py-2.5
+    text-white
+    font-semibold
+    hover:bg-green-800
+  "
+>
+  Reorder
+</button>
+
+       <button
+  onClick={(e) => {
+    e.stopPropagation();
+    onView();
+  }}
+  className="
+    rounded-xl
+    border
+    border-slate-300
+    px-5
+    py-2.5
+    text-sm
+    font-semibold
+    hover:bg-slate-50
+  "
+>
+  View Details
+</button>
+
+          {order.status === "Delivered" && (
+            <button
+              onClick={onReorder}
+              className="
+                flex
+                items-center
+                gap-2
+                rounded-xl
+                bg-slate-900
+                px-5
+                py-2.5
+                text-white
+              "
+            >
+              Reorder
+
+              <ChevronRight size={18} />
+            </button>
+          )}
+
+        </div>
+
+      </div>
+    </div>
   );
 };
 
